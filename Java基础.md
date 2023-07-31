@@ -23,7 +23,7 @@ Java 性能差的主要原因是 Java 是半编译语⾔，最终的执⾏代码
 
 **JVM：**Java虚拟机时运行Java字节码的虚拟机。JVM 有针对不同系统的特定实现（Windows，Linux，macOS），⽬的是使⽤相同的字节码，它们都会给出相同的结果。
 
-![image-20230630105731049](E:\八股图\Java基础\java程序编译解释过程.png)
+![image](https://github.com/NFSPRINGG/JavaWork/assets/90671394/1a974df7-077d-4a57-b039-b839288a6239)
 
 **JDK：**Java Development Kit，是功能齐全的Java SDK（软件开发工具）。它拥有JRE所拥有的一切，还有编译器（javac）和工具（javadoc、jdb）。它能够创建和编译程序。
 
