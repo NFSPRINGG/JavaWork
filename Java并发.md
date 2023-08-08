@@ -24,7 +24,7 @@
 
 下图是 Java 内存区域，通过下图我们从 JVM 的角度来说一下线程和进程之间的关系。
 
-![image-20230705162212738](D:\Files\JavaWork\pictures\Java运行时数据区域.png)
+![Java 运行时数据区域（JDK1.8 之后）](https://oss.javaguide.cn/github/javaguide/java/jvm/java-runtime-data-areas-jdk1.8.png)
 
 Java 虚拟机的运行时数据区包含**堆、方法区、虚拟机栈、本地方法栈、程序计数器**。各个进程之间是相互独立的，每个进程会包含多个线程，每个进程所包含的多个线程并不是相互独立的，这个线程会**共享**进程的堆和方法区，但这些线程**不会共享**虚拟机栈、本地方法栈、程序计数器
 
@@ -73,7 +73,7 @@ Java 虚拟机的运行时数据区包含**堆、方法区、虚拟机栈、本�
 
 ***
 
-![image-20230706093615889](D:\Files\JavaWork\线程状态变迁图.png)
+![Java 线程状态变迁图](https://oss.javaguide.cn/github/javaguide/java/concurrent/640.png)
 
 1. 线程创建后将处于**NEW初始**状态，调用`start()`方法后开始运行，此时线程处于**READY就绪**状态。
 2. 可运行状态的线程获取CPU时间片后就处于**RUNNING运行中**状态。
@@ -369,13 +369,13 @@ new 一个 `Thread`，线程进入了新建状态。调用 `start()`方法，会
 
 ***
 
-![image-20230706160253618](D:\Files\JavaWork\pictures\java内存魔心.png)
+![JMM(Java 内存模型)](https://oss.javaguide.cn/github/javaguide/java/concurrent/jmm.png)
 
 **Java 内存模型（JMM）** 抽象了线程和主内存之间的关系，就比如说线程之间的共享变量必须存储在主内存中。
 
 在 JDK1.2 之前，Java 的内存模型实现总是从 **主存** （即共享内存）读取变量，是不需要进行特别的注意的。而在当前的 Java 内存模型下，线程可以把变量保存 **本地内存** （比如机器的寄存器）中，而不是直接在主存中进行读写。这就可能造成一个线程在主存中修改了一个变量的值，而另外一个线程还继续使用它在寄存器中的变量值的拷贝，造成数据的不一致。
 
-要解决这个问题，就需要把变量声明为 **volatile**，这就指示 JVM，**这个变量是共享且不稳定的**， 每次使⽤它都到主存中进⾏读取。 所以， volatile 关键字 除了防⽌ JVM 的指令重排 ，还有⼀个重要的作⽤就是保证变量的可⻅性。
+要解决这个问题，就需要把变量声明为 **volatile**，这就指示 JVM，**这个变量是共享且不稳定的**， 每次使⽤它都到主存中进⾏读取。 所以， volatile 关键字除了防⽌ JVM 的指令重排 ，还有⼀个重要的作⽤就是保证变量的可⻅性。
 
 ### **什么是主内存？什么是本地内存？**
 
@@ -419,9 +419,46 @@ new 一个 `Thread`，线程进入了新建状态。调用 `start()`方法，会
 
 在 Java 中，`volatile` 关键字可以保证变量的可见性，如果我们将变量声明为 **`volatile`** ，这就指示 JVM，这个变量是共享且不稳定的，每次使用它都到主存中进行读取。
 
-`volatile` 关键字能保证数据的可见性，但不能保证数据的原子性。`synchronized` 关键字两者都能保证。
+**`volatile` 关键字能保证数据的可见性，但不能保证数据的原子性。`synchronized` 关键字两者都能保证。**
 
-![image-20230706161920090](D:\Files\JavaWork\pictures\JMM强制再主存中进行读取.png)
+![JMM(Java 内存模型)强制在主存中进行读取](https://oss.javaguide.cn/github/javaguide/java/concurrent/jmm2.png)
+
+### **volatile实现原理**
+
+#### 实现可见性原理
+
+**导致内存不可见的主要原因：**Java内存模型中本地内存和主内存之间的值不一致导致的。
+
+`volatile`可以保证内存可见性的关键是 `volatile`的读/写实现了**缓存一致性**。
+
+缓存一致性的主要内容为： 每个处理器会通过嗅探总线上的数据来查看自己的数据**是否过期**，一旦处理器发现自己缓存对应的内存地址被修改，就会将当前处理器的缓存设为无效状态。此时，如果处理器要获取这个数据，必须得重新从主内存将其读取到本地内存。 当处理器写数据时，如果发现操作的是共享变量，会通知其他处理器将该变量的缓存设为无效状态。
+
+**那缓存一致性是如何实现的呢？**
+
+可以发现通过 volatile 修饰的变量，在生成汇编指令时会比普通的变量多出一个 `Lock`指令，这个 `Lock `指令就是 `volatile `关键字可以保证内存可见性的关键，它主要有两个作用：
+
+（1）将当前处理器缓存的数据刷新到主内存。
+
+（2）刷新到主内存时会使得其他处理器缓存的该内存地址的数据无效。
+
+#### 实现有序性的原理
+
+为了实现 `volatile `的内存语义，编译器在生成字节码时会通过**插入内存屏障**来禁止指令重排序。
+
+**内存屏障**：是一种 CPU 指令，它的作用是对该指令前和指令后的一些操作产生一定的约束，保证一些操作按顺序执行。
+
+**Java内存模型把内存屏障分为4类，分别是`LoadLoad`、`StoreStore`、`LoadStore`、`StoreLoad`。**
+
+根据Java内存模型对编译器指定的重排序规则为：
+
+![img](https://pic4.zhimg.com/80/v2-21759d51a9bc8f17b8f639e5887946fb_720w.webp)
+
+- volatile写操作上面加ss屏障：禁止上面的普通写和下面的volatile写重排序；
+- volatile写操作下面加sl屏障：禁止上面的volatile写和下面可能的volatile读/写重排序；
+- volatile读操作下面加ll屏障：禁止上面的volatile读和下面所有的普通读重排序；
+- volatile读操作下面加ls屏障：禁止上面的volatile读和下面所有的普通写重排序；
+
+通过这四个重排序规则，volatile关键字可以禁止指令重排，实现有序性。
 
 ### **指令重排序**
 
@@ -546,6 +583,13 @@ CAS 涉及到三个操作数：
 
 当且仅当 V 的值等于 E 时，CAS 通过原子方式用新值 N 来更新 V 的值。如果不等，说明已经有其它线程更新了 V，则当前线程放弃更新。
 
+**举一个简单的例子**：线程 A 要修改变量 i 的值为 6，i 原值为 1（V = 1，E=1，N=6，假设不存在 ABA 问题）。
+
+1. i 与 1 进行比较，如果相等， 则说明没被其他线程修改，可以被设置为 6 。
+2. i 与 1 进行比较，如果不相等，则说明被其他线程修改，当前线程放弃更新，CAS 操作失败。
+
+当多个线程同时使用 CAS 操作一个变量时，只有一个会胜出，并成功更新，其余均会失败，但失败的线程并不会被挂起，仅是被告知失败，并且允许再次尝试，当然也允许失败的线程放弃操作。
+
 ### **乐观锁存在哪些问题？**
 
 #### ABA问题
@@ -650,7 +694,7 @@ public class SynchronizedDemo {
 
 当执行 `monitorenter` 指令时，线程试图获取锁也就是获取 **对象监视器 `monitor`** 的持有权。
 
-> 在 Java 虚拟机(HotSpot)中，Monitor 是基于 C++实现的，由[ObjectMonitoropen in new window](https://github.com/openjdk-mirror/jdk7u-hotspot/blob/50bdefc3afe944ca74c3093e7448d6b889cd20d1/src/share/vm/runtime/objectMonitor.cpp)实现的。每个对象中都内置了一个 `ObjectMonitor`对象。
+> 在 Java 虚拟机(HotSpot)中，Monitor 是基于 C++实现的。每个对象中都内置了一个 `ObjectMonitor`对象。
 >
 > 另外，`wait/notify`等方法也依赖于`monitor`对象，这就是为什么只有在同步的块或者方法中才能调用`wait/notify`等方法，否则会抛出`java.lang.IllegalMonitorStateException`的异常的原因
 
@@ -748,6 +792,7 @@ JDK1.6 对锁的实现引入了大量的优化，如偏向锁、轻量级锁、�
 - `volatile` 关键字是线程同步的轻量级实现，所以 `volatile`性能肯定比`synchronized`关键字要好 。但是 `volatile` 关键字**只能用于变量**而 `synchronized` 关键字可以修饰**方法以及代码块** 。
 - `volatile` 关键字能保证数据的可见性，但不能保证数据的原子性。`synchronized` 关键字两者都能保证。
 - `volatile`关键字主要用于解决变量在多个线程之间的可见性，而 `synchronized` 关键字解决的是多个线程之间访问资源的同步性。
+- `volatile `不会造成线程的阻塞，`synchronized `会造成线程的阻塞。
 
 ## **ReentrantLock**
 
@@ -792,7 +837,7 @@ public class SynchronizedDemo {
 
 ####  synchronized 依赖于 JVM 而 ReentrantLock 依赖于 API
 
-`synchronized` 是依赖于 JVM 实现的，前面我们也讲到了 虚拟机团队在 JDK1.6 为 `synchronized` 关键字进行了很多优化，但是这些优化都是在虚拟机层面实现的，并没有直接暴露给我们。
+`synchronized` 是依赖于 JVM 实现的，前面我们也讲到了虚拟机团队在 JDK1.6 为 `synchronized` 关键字进行了很多优化，但是这些优化都是在虚拟机层面实现的，并没有直接暴露给我们。
 
 `ReentrantLock` 是 JDK 层面实现的（也就是 API 层面，需要 lock() 和 unlock() 方法配合 try/finally 语句块来完成），所以我们可以通过查看它的源代码，来看它是如何实现的。
 
@@ -834,7 +879,9 @@ public class SynchronizedDemo {
 
 ### **ThreadLocal 原理**
 
-每一个`Thread` 类中都有一个 `threadLocals` 和 一个 `inheritableThreadLocals` 变量，它们都是 **`ThreadLocalMap` 类型**的变量,我们可以把 `ThreadLocalMap` 理解为`ThreadLocal` 类实现的定制化的 `HashMap`。默认情况下这两个变量都是 null，只有当前线程调用 `ThreadLocal` 类的 `set`或`get`方法时才创建它们，实际上调用这两个方法的时候，我们调用的是`ThreadLocalMap`类对应的 `get()`、`set()`方法。
+每一个`Thread` 类中都有一个 `threadLocals` 和 一个 `inheritableThreadLocals` 变量，它们都是 **`ThreadLocalMap` 类型**的变量，我们可以把 `ThreadLocalMap` 理解为`ThreadLocal` 类实现的定制化的 `HashMap`。默认情况下这两个变量都是 null，只有当前线程调用 `ThreadLocal` 类的 `set`或`get`方法时才创建它们，实际上调用这两个方法的时候，我们调用的是`ThreadLocalMap`类对应的 `get()`、`set()`方法。
+
+![ThreadLocal 数据结构](https://oss.javaguide.cn/github/javaguide/java/concurrent/threadlocal-data-structure.png)
 
 **最终的变量是放在了当前线程的 `ThreadLocalMap` 中，并不是存在 `ThreadLocal` 上，`ThreadLocal` 可以理解为只是`ThreadLocalMap`的封装，传递了变量值。** `ThrealLocal` 类中可以通过`Thread.currentThread()`获取到当前线程对象后，直接通过`getMap(Thread t)`可以访问到该线程的`ThreadLocalMap`对象。
 
@@ -942,7 +989,7 @@ ThreadLocalMap(ThreadLocal<?> firstKey, Object firstValue) {
 
 ### **线程池处理任务的流程（线程池执行原理是什么）**
 
-![图解线程池实现原理](D:\Files\JavaWork\pictures\图解线程池实现原理.png)
+![图解线程池实现原理](https://oss.javaguide.cn/javaguide/%E5%9B%BE%E8%A7%A3%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86.png)
 
 1. 如果当前运行的线程数小于核心线程数，那么就会新建一个线程来执行任务。
 
@@ -1034,7 +1081,7 @@ CPU 密集型简单理解就是利用 CPU 计算能力的任务比如你在内�
 
 格外需要注意的是`corePoolSize`， 程序运行期间的时候，我们调用 `setCorePoolSize（）`这个方法的话，线程池会首先判断当前工作线程数是否大于`corePoolSize`，如果大于的话就会回收工作线程。
 
-另外，你也看到了上面并没有动态指定队列长度的方法，美团的方式是自定义了一个叫做 `ResizableCapacityLinkedBlockIngQueue` 的队列（主要就是把`LinkedBlockingQueue`的 capacity 字段的 final 关键字修饰给去掉了，让它变为可变的）。
+另外，你也看到了上面并没有动态指定队列长度的方法，美团的方式是自定义了一个叫做 `ResizableCapacityLinkedBlockIngQueue` 的队列**（主要就是把`LinkedBlockingQueue`的 capacity 字段的 final 关键字修饰给去掉了，让它变为可变的）。**
 
 ## **Future**
 
@@ -1104,9 +1151,9 @@ AQS 为构建锁和同步器提供了一些通用功能的实现，因此，使�
 
 AQS 核心思想是，如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并且将共享资源设置为锁定状态。**如果被请求的共享资源被占用，那么就需要一套线程阻塞等待以及被唤醒时锁分配的机制**，这个机制 AQS 是用 **CLH 队列锁** 实现的，即**将暂时获取不到锁的线程加入到队列中。**
 
-CLH(Craig,Landin,and Hagersten) 队列是一个虚拟的双向队列（虚拟的双向队列即不存在队列实例，仅存在结点之间的关联关系）。AQS 是将每条请求共享资源的线程封装成一个 CLH 锁队列的一个结点（Node）来实现锁的分配。在 CLH 同步队列中，一个节点表示一个线程，它保存着线程的引用（thread）、 当前节点在队列中的状态（waitStatus）、前驱节点（prev）、后继节点（next）。
+CLH队列是一个虚拟的双向队列（虚拟的双向队列即不存在队列实例，仅存在结点之间的关联关系）。AQS 是将每条请求共享资源的线程封装成一个 CLH 锁队列的一个结点（Node）来实现锁的分配。在 CLH 同步队列中，一个节点表示一个线程，它保存着线程的引用（thread）、 当前节点在队列中的状态（waitStatus）、前驱节点（prev）、后继节点（next）。
 
-![img](D:\Files\JavaWork\pictures\CLH.png)
+![img](https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/Java%20%E7%A8%8B%E5%BA%8F%E5%91%98%E5%BF%85%E5%A4%87%EF%BC%9A%E5%B9%B6%E5%8F%91%E7%9F%A5%E8%AF%86%E7%B3%BB%E7%BB%9F%E6%80%BB%E7%BB%93/CLH.png)
 
 AQS 使用 **int 成员变量 `state` 表示同步状态**，通过内置的 **线程等待队列** 来完成获取资源线程的排队工作。
 
@@ -1183,7 +1230,7 @@ public Semaphore(int permits, boolean fair) {
 
 `Semaphore` 是**共享锁**的一种实现，它默认构造 AQS 的 `state` 值为 `permits`，你可以将 `permits` 的值理解为许可证的数量，只有拿到许可证的线程才能执行。
 
-调用`semaphore.acquire()` ，线程尝试获取许可证，如果 `state >= 0` 的话，则表示可以获取成功。如果获取成功的话，使用 CAS 操作去修改 `state` 的值 `state=state-1`。如果 `state<0` 的话，则表示许可证数量不足。此时会创建一个 Node 节点加入阻塞队列，挂起当前线程。
+调用`semaphore.acquire()` ，**线程尝试获取许可证，如果 `state >= 0` 的话，则表示可以获取成功。如果获取成功的话，使用 CAS 操作去修改 `state` 的值 `state=state-1`。如果 `state<0` 的话，则表示许可证数量不足。此时会创建一个 Node 节点加入阻塞队列，挂起当前线程。**
 
 ```java
 /**
@@ -1229,7 +1276,7 @@ public final boolean releaseShared(int arg) {
 
 `CountDownLatch` 允许 `count` 个线程阻塞在一个地方，直至所有线程的任务都执行完毕。
 
-`CountDownLatch` 是一次性的，计数器的值只能在构造方法中初始化一次，之后没有任何机制再次对其设置值，当 `CountDownLatch` 使用完毕后，它不能再次被使用。
+`CountDownLatch` 是一次性的，计数器的值只能在构造方法中初始化一次，之后没有任何机制再次对其设置值，当`CountDownLatch` 使用完毕后，它不能再次被使用。
 
 ### **CountDownLatch 的原理是什么？**
 
