@@ -6,9 +6,9 @@
 
 Java 集合， 也叫作容器，主要是由两大接口派生而来：一个是 `Collection`接口，主要用于存放单一元素；另一个是 `Map` 接口，主要用于存放键值对。对于`Collection` 接口，下面又有三个主要的子接口：`List`、`Set` 和 `Queue`。
 
-![Java 集合框架概览](D:\Files\javaWork\pictures\java集合框架.png)
+![Java 集合框架概览](https://oss.javaguide.cn/github/javaguide/java/collection/java-collection-hierarchy.png)
 
-![image.png](D:\Files\javaWork\pictures\java集合底层.png)
+![image.png](https://camo.githubusercontent.com/eb7c526190e720a854a2b02ce84fceeecdaf2dbc5cf79ef5e46bf6853c9dcf16/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f302f323032332f706e672f32383535313031302f313637393632363637353838372d65383261303032392d663363312d343537382d613263322d3861666138326633653566392e706e6723617665726167654875653d25323366376637663726636c69656e7449643d7534653664656534382d303138612d342666726f6d3d7061737465266865696768743d3638342669643d753238666334343132266e616d653d696d6167652e706e67266f726967696e4865696768743d363834266f726967696e57696474683d393435266f726967696e616c547970653d62696e61727926726174696f3d3126726f746174696f6e3d302673686f775469746c653d66616c73652673697a653d3439333537267374617475733d646f6e65267374796c653d6e6f6e65267461736b49643d7534643233643164642d633864652d346465312d613630342d6232383035373066346662267469746c653d2677696474683d393435)
 
 **`HashSet`：**底层数据结构是hash表，基于`HashMap`实现。 
 
@@ -32,8 +32,6 @@ Java 集合， 也叫作容器，主要是由两大接口派生而来：一个�
 ### **为什么要使用集合？**
 
 当我们需要存储一组类型相同的数据时，数组是最常用且最基本的容器之一。但是，使用数组存储对象存在一些不足之处，因为在实际开发中，存储的数据类型多种多样且数量不确定。这时，Java 集合就派上用场了。与数组相比，Java 集合提供了更灵活、更有效的方法来存储多个数据对象。Java 集合框架中的各种集合类和接口可以存储不同类型和数量的对象，同时还具有多样化的操作方式。相较于数组，Java 集合的优势在于它们的**大小可变**、**支持泛型**、**具有内建算法**等。总的来说，Java 集合提高了数据的存储和处理灵活性，可以更好地适应现代软件开发中多样化的数据需求，并支持高质量的代码编写。
-
-
 
 ## **List**
 
@@ -95,7 +93,7 @@ Java 集合， 也叫作容器，主要是由两大接口派生而来：一个�
 ### **ArrayList 与 LinkedList 区别**
 
 - **是否保证线程安全：** `ArrayList` 和 `LinkedList` 都是不同步的，也就是**不保证线程安全**；
-- **底层数据结构：** `ArrayList` 底层使用的是 **`Object` 数组**；`LinkedList` 底层使用的是 **双向链表** 数据结构（JDK1.6 之前为循环链表，JDK1.7 取消了循环。注意双向链表和双向循环链表的区别，下面有介绍到！）
+- **底层数据结构：** `ArrayList` 底层使用的是**`Object`数组**；`LinkedList` 底层使用的是 **双向链表** 数据结构（JDK1.6 之前为循环链表，JDK1.7 取消了循环。注意双向链表和双向循环链表的区别，下面有介绍到！）
 - **插入和删除是否受元素位置的影响：**
 
   - `ArrayList` 采用数组存储，所以插入和删除元素的时间复杂度受元素位置的影响。 比如：执行`add(E e)`方法的时候， `ArrayList` 会默认在将指定的元素追加到此列表的末尾，这种情况时间复杂度就是 O(1)。但是如果要在指定位置 i 插入和删除元素的话（`add(int index, E element)`），时间复杂度就为 O(n)。因为在进行上述操作的时候集合中第 i 和第 i 个元素之后的(n-i)个元素都要执行向后位/向前移一位的操作。
@@ -106,13 +104,13 @@ Java 集合， 也叫作容器，主要是由两大接口派生而来：一个�
 
 ### **ArrayList扩容机制分析**
 
-![image.png](D:\Files\JavaWork\pictures\ArrayList扩容机制.png)
+![ArrayList扩容机制.png](https://github.com/NFSPRINGG/JavaWork/blob/main/pictures/ArrayList%E6%89%A9%E5%AE%B9%E6%9C%BA%E5%88%B6.png?raw=true)
 
 `ArrayList`的底层采用`Object`数组来存储数据，在往 `ArrayList` 里面添加元素时，才会涉及到扩容机制。由于采用的是数组存储，所以会给数组设置默认长度10。 当数组中没有元素时，是不会设置为默认长度10 的，数组是一个空数组。只有要添加元素时，会进入 `ensureCapacityInternal()`进行判断，如果数据数组为空数组，在添加第一个元素时才将数组长度扩容为默认值10，如果数组不为空数组 ， 就在 `ensureCapacityInternal()`里 面 调 用 `ensureExplicitCapacity()`来判断是否需要扩容。
 
 如果需要扩容，才调用 `grow()`方法进行扩容。在`grow()`方法里面，会通过右移位运算将数组长度的新长度扩容为**原来的 1.5倍左右（oldCapacity 为偶数就是 1.5 倍，否则是 1.5 倍左右)**。
 
-扩容后如果新容量不能满足所需容量，就将新容量扩大为所需容量。也即新容量大于 `MAX_ARRAY_SIZE`,就调用`hugeCapacity()`方法来比较 `minCapacity` 和 `MAX_ARRAY_SIZE` 的大小，如果 `minCapacity` 大于最大容量，则新容量则为 `Integer.MAX_VALUE`，否则，新容量大小则为 `MAX_ARRAY_SIZE`，即为 `Integer.MAX_VALUE - 8`。
+扩容后如果新容量不能满足所需容量，就将新容量扩大为所需容量。也即新容量大于 `MAX_ARRAY_SIZE`，就调用`hugeCapacity()`方法来比较 `minCapacity` 和 `MAX_ARRAY_SIZE` 的大小，如果 `minCapacity` 大于最大容量，则新容量则为 `Integer.MAX_VALUE`，否则，新容量大小则为 `MAX_ARRAY_SIZE`，即为 `Integer.MAX_VALUE - 8`。
 
 最后将原数组中的元素拷贝到扩容后的新数组， 并将原数组的引用设置为拷贝后的数组。
 
@@ -124,10 +122,10 @@ Java 集合， 也叫作容器，主要是由两大接口派生而来：一个�
 
 `Comparable` 接口和 `Comparator` 接口都是 Java 中用于排序的接口，它们在实现类对象之间比较大小、排序等方面发挥了重要作用：
 
-- `Comparable` 接口实际上是出自`java.lang`包 它有一个 `compareTo(Object obj)`方法用来排序
-- `Comparator`接口实际上是出自 `java.util` 包它有一个`compare(Object obj1, Object obj2)`方法用来排序
+- `Comparable` 接口实际上是出自`java.lang`包它有一个 `compareTo(Object obj)`方法用来排序
+- `Comparator`接口实际上是出自 `java.util`包它有一个`compare(Object obj1, Object obj2)`方法用来排序
 
-**Comparable接口**
+### **Comparable接口**
 
 Comparable是排序接口。若一个类实现了Comparable接口，就意味着该类支持排序。实现了Comparable接口的类的对象的列表或数组可以通过`Collections.sort`或`Arrays.sort`进行自动排序。实现此接口的对象可以用作有序映射中的键或有序集合中的集合，无需指定比较器
 
@@ -179,8 +177,6 @@ Collections.sort(arrayList, new Comparator<Integer>() {
 
 当你把对象加入`HashSet`时，`HashSet` 会先计算对象的`hashcode`值来判断对象加入的位置，同时也会与其他加入的对象的 `hashcode` 值作比较，如果没有相符的 `hashcode`，`HashSet` 会假设对象没有重复出现。但是如果发现有相同 `hashcode` 值的对象，这时会调用`equals()`方法来检查 `hashcode` 相等的对象是否真的相同。如果两者相同，`HashSet` 就不会让加入操作成功。
 
-
-
 ## **Queue**
 
 ***
@@ -196,7 +192,7 @@ Collections.sort(arrayList, new Comparator<Integer>() {
 | 删除队首     | remove()  | poll()     |
 | 查询队首元素 | element() | peek()     |
 
-`Deque` 扩展了 `Queue` 的接口, 增加了在队首和队尾进行插入和删除的方法，同样根据失败后处理方式的不同分为两类：
+`Deque` 扩展了 `Queue` 的接口，增加了在队首和队尾进行插入和删除的方法，同样根据失败后处理方式的不同分为两类：
 
 | `Deque` 接口 | 抛出异常      | 返回特殊值      |
 | :----------- | ------------- | --------------- |
@@ -214,7 +210,7 @@ Collections.sort(arrayList, new Comparator<Integer>() {
 - `ArrayDeque` 是基于可变长的数组和双指针来实现，而 `LinkedList` 则通过链表来实现。
 - `ArrayDeque` 不支持存储 `NULL` 数据，但 `LinkedList` 支持。
 - `ArrayDeque` 是在 JDK1.6 才被引入的，而`LinkedList` 早在 JDK1.2 时就已经存在。
-- `ArrayDeque` 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 `LinkedList` 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。
+- `ArrayDeque` 插入时可能存在扩容过程，不过均摊后的插入操作依然为 O(1)。虽然 `LinkedList` 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。
 
 从性能的角度上，选用 `ArrayDeque` 来实现队列要比 `LinkedList` 更好。此外，`ArrayDeque` 也可以用于实现栈。
 
@@ -232,7 +228,7 @@ Collections.sort(arrayList, new Comparator<Integer>() {
 
 - **对 Null key 和 Null value 的支持：** `HashMap` 可以存储 null 的 key 和 value，但 null 作为键只能有一个，null 作为值可以有多个；Hashtable 不允许有 null 键和 null 值，否则会抛出 `NullPointerException`。
 
-- **初始容量大小和每次扩充容量大小的不同：** ① 创建时如果不指定容量初始值，`Hashtable` 默认的初始大小为 11，之后每次扩充，容量变为原来的 2n+1。`HashMap` 默认的初始化大小为 16。之后每次扩充，容量变为原来的 2 倍。② 创建时如果给定了容量初始值，那么 `Hashtable` 会直接使用你给定的大小，而 `HashMap` 会将其扩充为 2 的幂次方大小（`HashMap` 中的`tableSizeFor()`方法保证，下面给出了源代码）。也就是说 `HashMap` 总是使用 2 的幂作为哈希表的大小，后面会介绍到为什么是 2 的幂次方。
+- **初始容量大小和每次扩充容量大小的不同：** ① 创建时如果不指定容量初始值，`Hashtable` 默认的初始大小为 11，之后每次扩充，容量变为原来的 2n+1。**`HashMap` 默认的初始化大小为 16**。之后每次扩充，容量变为原来的 2 倍。② 创建时如果给定了容量初始值，那么 `Hashtable` 会直接使用你给定的大小，而 `HashMap` 会将其扩充为 2 的幂次方大小（`HashMap` 中的`tableSizeFor()`方法保证，下面给出了源代码）。也就是说 `HashMap` 总是使用 2 的幂作为哈希表的大小，后面会介绍到为什么是 2 的幂次方。
 
 - **底层数据结构：** JDK1.8 以后的 `HashMap` 在解决哈希冲突时有了较大的变化，当链表长度大于阈值（默认为 8）时，将链表转化为红黑树（将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树），以减少搜索时间（后文中我会结合源码对这一过程进行分析）。`Hashtable` 没有这样的机制。
 
@@ -240,9 +236,9 @@ Collections.sort(arrayList, new Comparator<Integer>() {
 
 #### JDK1.8之前
 
-![jdk1.8 之前的内部结构-HashMap](D:\Files\JavaWork\jdk1.7_hashmap结构.png)
+![jdk1.8 之前的内部结构-HashMap](https://oss.javaguide.cn/github/javaguide/java/collection/jdk1.7_hashmap.png)
 
-JDK1.8 之前 `HashMap` 底层是 **数组和链表** 结合在一起使用也就是 **链表散列**。HashMap 通过 key 的 `hashcode` （经过扰动函数处理过后得到 hash 值），然后通过 `(n - 1) & hash` 判断当前元素存放的位置（这里的 n 指的是数组的长度），如果当前位置存在元素的话，就判断该元素与要存入的元素的 hash 值以及 key 是否相同，如果相同的话，直接覆盖，不相同就通过**拉链法解决冲突**。
+JDK1.8 之前 `HashMap` 底层是 **数组和链表** 结合在一起使用也就是 **链表散列**。HashMap 通过它的hash()方法获取key对应的hashCode值（经过扰动函数处理过后得到 hash 值），然后通过 `(n - 1) & hash` 判断当前元素存放的位置（这里的 n 指的是数组的长度），如果当前位置存在元素的话，就判断该元素与要存入的元素的 hash 值以及 key 是否相同，如果相同的话，直接覆盖，不相同就通过**拉链法解决冲突**。
 
 > 所谓**扰动函数**指的就是 HashMap 的 `hash` 方法。使用 `hash` 方法也就是扰动函数是为了防止一些实现比较差的 `hashCode()` 方法 换句话说使用扰动函数之后可以减少碰撞。
 >
@@ -254,7 +250,7 @@ JDK1.8 之前 `HashMap` 底层是 **数组和链表** 结合在一起使用也�
 
 ### **HashMap 的长度为什么是 2的幂次方**
 
-**为了能让 HashMap 存取高效，尽量较少碰撞，也就是要尽量把数据分配均匀。**当我们往 HashMap 里面 put 元素的时候，会通过 hashMap 的 hash 方法，获取 key 对应的 hashCode 值，然后拿这个值去判断该元素要存放在那个地方，这里采用的是`(n-1) & hash`，也即右移16位，其中 n 为 HashMap 的长度，这也就解释了 HashMap 的长度为什么是 2 的幂次方。
+**为了能让 HashMap 存取高效，尽量较少碰撞，也就是要尽量把数据分配均匀。**当我们往 HashMap 里面 put 元素的时候，会通过 hashMap 的 hash 方法，获取 key 对应的 hashCode 值，然后拿这个值去判断该元素要存放在那个地方，这里采用的是`(n-1) & hash`,也即右移16位，其中 n 为 HashMap 的长度，这个操作只有当 n 是 2 的幂次方时，`(n-1) & hash` 才和 hash%n 表示的是一个意思，这样才能找到这个 key 在数组中对应的位置。 如果不是 2 的幂次方， `(n-1) & hash` 是不等于 `hash%n` 的，之所以采用位运算的好处是：相较于%操作，它的**效率更高，保证散列均匀分布**。
 
 **这个算法应该如何设计呢？**
 
@@ -350,7 +346,7 @@ JDK1.7 及之前版本，在多线程环境下，`HashMap` 扩容时会造成死
 
 #### **性能分析**
 
-**存在阻塞时 `parallelStream` 性能最高, 非阻塞时 `parallelStream` 性能最低** 。`entrySet`的性能比`keySet`的性能好，尽量使用`entrySet`来遍历Map集合。 `KeySet` 在循环时使用了 `map.get(key)`，而 map.get(key) 相当于又遍历了一遍 Map 集合去查询 key 所对应的值。为什么要用“又”这个词？那是因为**在使用迭代器或者 for 循环时，其实已经遍历了一遍 Map 集合了，因此再使用 map.get(key) 查询时，相当于遍历了两遍**。 而 `EntrySet `只遍历了一遍 Map 集合，之后通过代码“`Entry<Integer, String> entry = iterator.next()`”把对象的 key 和 value 值都放入到了 Entry 对象中，因此再获取 key 和 value 值时就无需再遍历 Map 集合，只需要从 Entry 对象中取值就可以了。 所以，**EntrySet 的性能比 KeySet 的性能高出了一倍，因为 KeySet 相当于循环了两遍 Map 集合，而 EntrySet 只循环了一遍**。
+`entrySet`的性能比`keySet`的性能好，尽量使用`entrySet`来遍历Map集合。`KeySet` 在循环时使用了 `map.get(key)`，而 map.get(key) 相当于又遍历了一遍 Map 集合去查询 key 所对应的值。为什么要用“又”这个词？那是因为**在使用迭代器或者 for 循环时，其实已经遍历了一遍 Map 集合了，因此再使用 map.get(key) 查询时，相当于遍历了两遍**。 而 `EntrySet `只遍历了一遍 Map 集合，之后通过代码“`Entry<Integer, String> entry = iterator.next()`”把对象的 key 和 value 值都放入到了 Entry 对象中，因此再获取 key 和 value 值时就无需再遍历 Map 集合，只需要从 Entry 对象中取值就可以了。 所以，**EntrySet 的性能比 KeySet 的性能高出了一倍，因为 KeySet 相当于循环了两遍 Map 集合，而 EntrySet 只循环了一遍**。
 
 #### **安全性能**
 
@@ -366,15 +362,15 @@ JDK1.7 及之前版本，在多线程环境下，`HashMap` 扩容时会造成死
 
   - 在 JDK1.7 的时候，`ConcurrentHashMap` 对整个桶数组进行了**分割分段**(`Segment`，分段锁)，每一把锁只锁容器其中一部分数据（下面有示意图），多线程访问容器里不同数据段的数据，就**不会存在锁竞争，提高并发访问率**。
 
-    ![image.png](D:\Files\JavaWork\pictures\JDK1.7的ConcurrentHashMap底层数据结构.png)
+    ![Java7 ConcurrentHashMap 存储结构](https://oss.javaguide.cn/github/javaguide/java/collection/java7_concurrenthashmap.png)
 
-  - 到了 JDK1.8 的时候，`ConcurrentHashMap` 已经摒弃了 `Segment` 的概念，而是直接用 `Node` 数组+链表+红黑树的数据结构来实现，**并发控制使用 `synchronized` 和 CAS 来操作**。（JDK1.6 以后 `synchronized` 锁做了很多优化） 整个看起来就像是优化过且线程安全的 `HashMap`，虽然在 JDK1.8 中还能看到 `Segment` 的数据结构，但是已经简化了属性，只是为了兼容旧版本；
+  - 到了 JDK1.8 的时候，`ConcurrentHashMap` 已经摒弃了 `Segment` 的概念，而是直接用 `Node`数组+链表+红黑树的数据结构来实现，**并发控制使用 `synchronized` 和 CAS 来操作**。（JDK1.6 以后 `synchronized` 锁做了很多优化） 整个看起来就像是优化过且线程安全的 `HashMap`，虽然在 JDK1.8 中还能看到 `Segment` 的数据结构，但是已经简化了属性，只是为了兼容旧版本；
 
-    ![image.png](D:\Files\JavaWork\pictures\JDK1.8的ConcurrentHashMap底层数据结构.png)
+    ![Java8 ConcurrentHashMap 存储结构](https://oss.javaguide.cn/github/javaguide/java/collection/java8_concurrenthashmap.png)
 
   - **`Hashtable`(同一把锁)** ：使用 `synchronized` 来保证线程安全，效率非常低下。当一个线程访问同步方法时，其他线程也访问同步方法，可能会进入阻塞或轮询状态，如使用 put 添加元素，另一个线程不能使用 put 添加元素，也不能使用 get，竞争会越来越激烈效率越低。
 
-    ![image.png](D:\Files\JavaWork\pictures\Hashtable底层数据结构.png)
+    ![Hashtable 的内部结构](https://oss.javaguide.cn/github/javaguide/java/collection/jdk1.7_hashmap.png)
 
 ### **ConcurrentHashMap 线程安全的具体实现方式/底层具体实现**
 
